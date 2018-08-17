@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
@@ -24,7 +26,7 @@ import java.io.IOException;
 public class EndpointsAsyncTask extends AsyncTask<Activity, Void, String> {
     private static MyApi myApiService = null;
     private Activity context;
-
+    private static final String LOG_TAG = EndpointsAsyncTask.class.getName();
     @Override
     protected String doInBackground(Activity... params) {
         if(myApiService == null) {  // Only do this once
@@ -47,16 +49,20 @@ public class EndpointsAsyncTask extends AsyncTask<Activity, Void, String> {
         try {
             return myApiService.getJoke().execute().getData();
         } catch (IOException e) {
-            return e.getMessage();
+            Log.w(LOG_TAG, e.getMessage());
+            return null;
         }
     }
 
     @Override
     protected void onPostExecute(String result) {
         if(context != null) {
-            Intent intent = new Intent(context, JokeActivity.class);
-            intent.putExtra(JokeActivity.JOKE_KEY, result);
-            context.startActivity(intent);
+             if(result==null) {
+                 result = "There was an error getting your joke from the server";
+             }
+             Intent intent = new Intent(context, JokeActivity.class);
+             intent.putExtra(JokeActivity.JOKE_KEY, result);
+             context.startActivity(intent);
         }
     }
 }
